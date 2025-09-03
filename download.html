@@ -37,7 +37,7 @@
 
   <!-- Main -->
   <main class="flex flex-col items-center justify-center flex-grow px-6 pt-36">
-    <div class="relative w-full max-w-4xl -ml-12"> <!-- bigger & shifted left -->
+    <div class="relative w-full max-w-4xl -ml-12">
       <div class="absolute inset-0 bg-gradient-to-br from-white/5 via-black/40 to-black/60 backdrop-blur-xl rounded-3xl border border-white/10 -m-4"></div>
       <div class="relative p-12 rounded-3xl flex items-center space-x-10">
         
@@ -48,10 +48,10 @@
         <!-- Text + Download -->
         <div class="flex flex-col space-y-6">
           <!-- Version -->
-          <h2 class="text-3xl font-bold">Bromine v1.0.0</h2>
+          <h2 id="version" class="text-3xl font-bold">Loading...</h2>
 
           <!-- Download Button -->
-          <a href="#" 
+          <a id="downloadBtn" href="#" 
              class="px-10 py-5 text-2xl font-bold rounded-2xl bg-white text-black shadow-lg hover:scale-105 hover:bg-gray-200 transition transform">
             ⬇ Download Now
           </a>
@@ -67,5 +67,35 @@
 
   <script src="https://unpkg.com/lucide@latest"></script>
   <script> lucide.createIcons(); </script>
+
+  <!-- Supabase Integration -->
+  <script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
+
+    const supabaseUrl = 'https://cfifcrcpyvlmerjsfgdr.supabase.co';
+    const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNmaWZjcmNweXZsbWVyanNmZHIiLCJyb2xlIjoiYW5vbiIsImlhdCI6MTc1NjkzMDY3OCwiZXhwIjoyMDcyNTA2Njc4fQ.-it5l5_9qZAGWOF7b4kZMaNhSfN2nhveBqm0nqLov2U';
+
+    const supabase = createClient(supabaseUrl, supabaseAnonKey);
+
+    async function loadDownload() {
+      const { data, error } = await supabase
+        .from('downloads')
+        .select('*')
+        .single();
+
+      if (error) {
+        console.error(error);
+        document.getElementById('version').innerText = 'Failed to load';
+        document.getElementById('downloadBtn').href = '#';
+        return;
+      }
+
+      document.getElementById('version').innerText = `Bromine v${data.version}`;
+      document.getElementById('downloadBtn').href = data.link;
+    }
+
+    loadDownload();
+  </script>
+
 </body>
 </html>

@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bromine Dashboard</title>
+  <script type="module" src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { font-family: 'Poppins', sans-serif; }
+  </style>
+</head>
+<body class="bg-gradient-to-br from-orange-600 via-orange-700 to-black min-h-screen flex items-center justify-center text-white">
+  <div class="bg-black/50 backdrop-blur-xl p-10 rounded-3xl w-full max-w-lg">
+    <h1 class="text-3xl font-bold mb-6 text-center">Bromine Dashboard</h1>
+
+    <form id="downloadForm" class="space-y-4">
+      <div>
+        <label class="block text-lg mb-1">Version</label>
+        <input type="text" id="version" class="w-full p-3 rounded bg-gray-800 border border-gray-600" required>
+      </div>
+      <div>
+        <label class="block text-lg mb-1">Download Link</label>
+        <input type="text" id="link" class="w-full p-3 rounded bg-gray-800 border border-gray-600" required>
+      </div>
+      <button type="submit" class="w-full py-3 rounded-xl bg-white text-black font-bold hover:bg-gray-200 transition">
+        Save Changes
+      </button>
+    </form>
+
+    <p id="status" class="mt-4 text-center text-lg"></p>
+  </div>
+
+  <script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
+
+    const supabaseUrl = 'https://cfifcrcpyvlmerjsfgdr.supabase.co';
+    const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNmaWZjcmNweXZsbWVyanNmZHIiLCJyb2xlIjoiYW5vbiIsImlhdCI6MTc1NjkzMDY3OCwiZXhwIjoyMDcyNTA2Njc4fQ.-it5l5_9qZAGWOF7b4kZMaNhSfN2nhveBqm0nqLov2U';
+    const supabase = createClient(supabaseUrl, supabaseAnonKey);
+
+    let currentRowId;
+
+    async function loadDownload() {
+      const { data, error } = await supabase
+        .from('downloads')
+        .select('*')
+        .single();
+      if (error) {
+        document.getElementById('status').innerText = '❌ Failed to load data';
+        console.error(error);
+        return;
+      }
+
+      currentRowId = data.id;
+      document.getElementById('version').value = data.version;
+      document.getElementById('link').value = data.link;
+    }
+
+    loadDownload();
+
+    document.getElementById('downloadForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const version = document.getElementById('version').value;
+      const link = document.getElementById('link').value;
+
+      const { data, error } = await supabase
+        .from('downloads')
+        .update({ version, link })
+        .eq('id', currentRowId);
+
+      if (error) {
+        document.getElementById('status').innerText = '❌ Failed to update';
+        console.error(error);
+      } else {
+        document.getElementById('status').innerText = '✅ Download info updated!';
+      }
+    });
+  </script>
+</body>
+</html>
